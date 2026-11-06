@@ -1,0 +1,809 @@
+```html
+<!DOCTYPE html>
+<html lang="hi" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Work Billing & Rate Calculator Dashboard</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            500: '#0284c7',
+                            600: '#0369a1',
+                            700: '#075985',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #4b5563;
+            border-radius: 4px;
+        }
+        .glass-panel {
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+    </style>
+</head>
+<body class="bg-gray-100 dark:bg-gray-950 text-gray-800 dark:text-gray-100 min-h-screen flex flex-col transition-colors duration-300">
+
+    <!-- Top Navigation / Header -->
+    <header class="sticky top-0 z-40 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 transition-colors">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <!-- App Logo & Title -->
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-cyan-400 flex items-center justify-center text-white shadow-lg shadow-blue-500/30">
+                    <i class="fa-solid me-0 fa-gem text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg leading-tight bg-gradient-to-r from-blue-600 via-cyan-500 to-teal-400 bg-clip-text text-transparent">
+                        Work & Billing Hub
+                    </h1>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 hidden sm:block">Nag, Crystal & BN Calculator</p>
+                </div>
+            </div>
+
+            <!-- Header Controls & User Profile -->
+            <div class="flex items-center gap-3">
+                <!-- Theme Toggle Button -->
+                <button id="themeToggleBtn" onclick="toggleDarkMode()" class="p-2.5 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 transition-all" title="Toggle Light/Dark Theme">
+                    <i id="themeIcon" class="fa-solid fa-moon text-lg"></i>
+                </button>
+
+                <!-- Quick Calculator Popup Toggle -->
+                <button id="calcToggleBtn" onclick="toggleCalcModal()" class="p-2.5 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 transition-all relative" title="Quick Calculator">
+                    <i class="fa-solid fa-calculator text-lg"></i>
+                </button>
+
+                <!-- User Profile / Auth Area -->
+                <div id="userProfileArea" class="hidden flex items-center gap-3 pl-3 border-l border-gray-200 dark:border-gray-800">
+                    <div class="relative group cursor-pointer" onclick="triggerProfileUpload()">
+                        <img id="userAvatar" src="https://placehold.co/100x100/0284c7/ffffff?text=User" alt="Profile Picture" class="w-10 h-10 rounded-full object-cover ring-2 ring-blue-500/50 hover:ring-blue-500 transition-all">
+                        <div class="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            <i class="fa-solid fa-camera text-white text-xs"></i>
+                        </div>
+                        <input type="file" id="avatarInput" accept="image/*" class="hidden" onchange="handleAvatarUpload(event)">
+                    </div>
+                    <div class="hidden sm:block text-left">
+                        <div id="userNameDisplay" class="text-sm font-semibold text-gray-800 dark:text-gray-200">User Name</div>
+                        <button onclick="handleLogout()" class="text-xs text-red-500 hover:underline">Log Out</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Body Container -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+        <!-- AUTHENTICATION CONTAINER (LOGIN & CREATE PASSWORD) -->
+        <section id="authSection" class="max-w-md mx-auto my-8 bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-800 overflow-hidden transition-all">
+            <!-- Auth Header Tabs -->
+            <div class="flex border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50">
+                <button id="tabLoginBtn" onclick="switchAuthTab('login')" class="flex-1 py-4 text-center font-medium text-sm border-b-2 border-blue-600 text-blue-600 dark:text-blue-400 transition-all">
+                    <i class="fa-solid fa-right-to-bracket mr-2"></i>Log In
+                </button>
+                <button id="tabRegisterBtn" onclick="switchAuthTab('register')" class="flex-1 py-4 text-center font-medium text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-all">
+                    <i class="fa-solid fa-user-plus mr-2"></i>Create Password
+                </button>
+            </div>
+
+            <!-- Auth Body -->
+            <div class="p-6">
+                <!-- Login Form -->
+                <form id="loginForm" onsubmit="handleLoginSubmit(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-1">User ID / Username</label>
+                        <input type="text" id="loginUsername" required placeholder="Enter username" class="w-full px-4 py-2.5 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-1">Password</label>
+                        <input type="password" id="loginPassword" required placeholder="••••••••" class="w-full px-4 py-2.5 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm transition-all">
+                    </div>
+                    <button type="submit" class="w-full py-3 bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white font-semibold rounded-xl shadow-lg shadow-blue-500/25 transition-all text-sm flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-lock-open"></i> Log In to Dashboard
+                    </button>
+                </form>
+
+                <!-- Create Password / Register Form -->
+                <form id="registerForm" onsubmit="handleRegisterSubmit(event)" class="space-y-4 hidden">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-1">Full Name</label>
+                        <input type="text" id="regFullName" required placeholder="Enter your full name" class="w-full px-4 py-2.5 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-1">Set Username</label>
+                        <input type="text" id="regUsername" required placeholder="Choose a username" class="w-full px-4 py-2.5 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-1">Create Password</label>
+                        <input type="password" id="regPassword" required placeholder="Create strong password" class="w-full px-4 py-2.5 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-1">Confirm Password</label>
+                        <input type="password" id="regConfirmPassword" required placeholder="Re-enter password" class="w-full px-4 py-2.5 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm transition-all">
+                    </div>
+                    <button type="submit" class="w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-700 hover:to-teal-600 text-white font-semibold rounded-xl shadow-lg shadow-emerald-500/25 transition-all text-sm flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-user-check"></i> Save & Register Account
+                    </button>
+                </form>
+
+                <!-- Status Feedback Message -->
+                <div id="authAlert" class="hidden mt-4 p-3 rounded-xl text-xs font-medium text-center"></div>
+            </div>
+        </section>
+
+        <!-- DASHBOARD CONTAINER (Main Billing Calculator & History) -->
+        <div id="dashboardSection" class="hidden space-y-6">
+
+            <!-- Rate Info Cards Banner -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="p-4 rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-sm flex items-center gap-4">
+                    <div class="p-3 rounded-xl bg-amber-500/10 text-amber-500">
+                        <i class="fa-solid fa-diamond text-2xl"></i>
+                    </div>
+                    <div>
+                        <div class="text-xs font-medium text-gray-500 dark:text-gray-400">Nag Rate Fix</div>
+                        <div class="text-lg font-bold text-gray-900 dark:text-gray-100">1440 Nag = 17 AED</div>
+                    </div>
+                </div>
+
+                <div class="p-4 rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-sm flex items-center gap-4">
+                    <div class="p-3 rounded-xl bg-cyan-500/10 text-cyan-500">
+                        <i class="fa-solid fa-gem text-2xl"></i>
+                    </div>
+                    <div>
+                        <div class="text-xs font-medium text-gray-500 dark:text-gray-400">Crystal Rate Fix</div>
+                        <div class="text-lg font-bold text-gray-900 dark:text-gray-100">200 Crystal = 10 AED</div>
+                    </div>
+                </div>
+
+                <div class="p-4 rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-sm flex items-center gap-4">
+                    <div class="p-3 rounded-xl bg-purple-500/10 text-purple-500">
+                        <i class="fa-solid fa-shapes text-2xl"></i>
+                    </div>
+                    <div>
+                        <div class="text-xs font-medium text-gray-500 dark:text-gray-400">BN Rate Fix</div>
+                        <div class="text-lg font-bold text-gray-900 dark:text-gray-100">200 BN = 10 AED</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Entry Form & Live Summary Section -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+                <!-- Left Column: Work Order Input Form -->
+                <div class="lg:col-span-2 bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-5 sm:p-6 shadow-sm space-y-6">
+                    <div class="flex items-center justify-between pb-4 border-b border-gray-200 dark:border-gray-800">
+                        <h2 class="text-lg font-bold flex items-center gap-2">
+                            <i class="fa-solid fa-file-invoice text-blue-500"></i>
+                            New Bill Entry (नया बिल / वर्क एंट्री)
+                        </h2>
+                        <button onclick="resetBillForm()" class="text-xs font-medium text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
+                            <i class="fa-solid fa-rotate-left mr-1"></i> Clear Form
+                        </button>
+                    </div>
+
+                    <form id="billForm" onsubmit="handleSaveBill(event)" class="space-y-4">
+                        <!-- Top Inputs: Bill No, Model No, Date -->
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase mb-1">Bill No. (बिल नंबर)</label>
+                                <input type="text" id="billNo" required placeholder="e.g. B-101" class="w-full px-4 py-2.5 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm transition-all">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase mb-1">Model Number (मॉडल)</label>
+                                <input type="text" id="modelNo" required placeholder="e.g. M-8890" class="w-full px-4 py-2.5 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm transition-all">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase mb-1">Booking Date</label>
+                                <input type="date" id="bookingDate" required class="w-full px-4 py-2.5 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm transition-all">
+                            </div>
+                        </div>
+
+                        <!-- Quantity Inputs for Nag, Crystal, BN -->
+                        <div class="pt-2">
+                            <h3 class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">Work Quantities & Automatic Rate Calculation</h3>
+                            
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <!-- Nag Input -->
+                                <div class="bg-gray-50 dark:bg-gray-800/60 p-3.5 rounded-xl border border-gray-200 dark:border-gray-700/60 space-y-2">
+                                    <label class="block text-xs font-semibold text-amber-600 dark:text-amber-400 flex justify-between">
+                                        <span>Nag (नग) Quantity</span>
+                                        <span class="text-[10px] text-gray-400">1440 = 17 AED</span>
+                                    </label>
+                                    <input type="number" id="nagQty" min="0" value="0" step="any" oninput="calculateRealtimeWork()" placeholder="0" class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm font-semibold">
+                                    <div class="text-xs text-right text-gray-500 dark:text-gray-400">
+                                        Amount: <span id="nagCalculated" class="font-bold text-amber-600 dark:text-amber-400">0.00</span> AED
+                                    </div>
+                                </div>
+
+                                <!-- Crystal Input -->
+                                <div class="bg-gray-50 dark:bg-gray-800/60 p-3.5 rounded-xl border border-gray-200 dark:border-gray-700/60 space-y-2">
+                                    <label class="block text-xs font-semibold text-cyan-600 dark:text-cyan-400 flex justify-between">
+                                        <span>Crystal (क्रिस्टल) Quantity</span>
+                                        <span class="text-[10px] text-gray-400">200 = 10 AED</span>
+                                    </label>
+                                    <input type="number" id="crystalQty" min="0" value="0" step="any" oninput="calculateRealtimeWork()" placeholder="0" class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-cyan-500 text-sm font-semibold">
+                                    <div class="text-xs text-right text-gray-500 dark:text-gray-400">
+                                        Amount: <span id="crystalCalculated" class="font-bold text-cyan-600 dark:text-cyan-400">0.00</span> AED
+                                    </div>
+                                </div>
+
+                                <!-- BN Input -->
+                                <div class="bg-gray-50 dark:bg-gray-800/60 p-3.5 rounded-xl border border-gray-200 dark:border-gray-700/60 space-y-2">
+                                    <label class="block text-xs font-semibold text-purple-600 dark:text-purple-400 flex justify-between">
+                                        <span>BN (बीएन राओ) Quantity</span>
+                                        <span class="text-[10px] text-gray-400">200 = 10 AED</span>
+                                    </label>
+                                    <input type="number" id="bnQty" min="0" value="0" step="any" oninput="calculateRealtimeWork()" placeholder="0" class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm font-semibold">
+                                    <div class="text-xs text-right text-gray-500 dark:text-gray-400">
+                                        Amount: <span id="bnCalculated" class="font-bold text-purple-600 dark:text-purple-400">0.00</span> AED
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Form Action Button -->
+                        <div class="pt-2">
+                            <button type="submit" class="w-full py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-blue-500/25 transition-all text-sm flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-floppy-disk"></i> Save Bill Record (बिल सेव करें)
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Right Column: Live Work Amount Breakdown Card -->
+                <div class="bg-gradient-to-br from-gray-900 to-gray-800 text-white rounded-2xl p-6 shadow-xl flex flex-col justify-between border border-gray-700 relative overflow-hidden">
+                    <div class="absolute -right-10 -bottom-10 w-40 h-40 bg-blue-500/10 rounded-full blur-2xl"></div>
+                    
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="text-xs font-bold uppercase tracking-wider text-blue-400">Live Work Summary</span>
+                            <span class="px-2.5 py-1 rounded-full text-[10px] font-semibold bg-blue-500/20 text-blue-300 border border-blue-500/30">Auto Calculating</span>
+                        </div>
+
+                        <!-- Total Work Amount Highlight -->
+                        <div class="mb-6">
+                            <div class="text-xs text-gray-400 mb-1">Total Work Amount (कुल राशि)</div>
+                            <div class="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400">
+                                AED <span id="liveTotalAmount">0.00</span>
+                            </div>
+                        </div>
+
+                        <!-- Individual Breakdown Items -->
+                        <div class="space-y-3 pt-4 border-t border-gray-700/80">
+                            <div class="flex justify-between items-center text-sm">
+                                <span class="text-gray-300 flex items-center gap-2">
+                                    <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span> Nag Amount:
+                                </span>
+                                <span class="font-bold text-amber-300">AED <span id="summaryNagAmt">0.00</span></span>
+                            </div>
+
+                            <div class="flex justify-between items-center text-sm">
+                                <span class="text-gray-300 flex items-center gap-2">
+                                    <span class="w-2.5 h-2.5 rounded-full bg-cyan-400"></span> Crystal Amount:
+                                </span>
+                                <span class="font-bold text-cyan-300">AED <span id="summaryCrystalAmt">0.00</span></span>
+                            </div>
+
+                            <div class="flex justify-between items-center text-sm">
+                                <span class="text-gray-300 flex items-center gap-2">
+                                    <span class="w-2.5 h-2.5 rounded-full bg-purple-400"></span> BN Amount:
+                                </span>
+                                <span class="font-bold text-purple-300">AED <span id="summaryBnAmt">0.00</span></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Formula Helper Reference -->
+                    <div class="mt-6 pt-4 border-t border-gray-700/60 text-[11px] text-gray-400 space-y-1">
+                        <div class="flex justify-between"><span>Nag formula:</span> <span>(Qty / 1440) × 17 AED</span></div>
+                        <div class="flex justify-between"><span>Crystal & BN formula:</span> <span>(Qty / 200) × 10 AED</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- History Table Section -->
+            <div class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-5 sm:p-6 shadow-sm space-y-4">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div>
+                        <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                            <i class="fa-solid fa-clock-history text-cyan-500"></i> Work Billing History (बिलिंग रिकॉर्ड्स)
+                        </h3>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">Saved billing entries log</p>
+                    </div>
+                    
+                    <!-- Search Input -->
+                    <div class="relative w-full sm:w-64">
+                        <input type="text" id="searchInput" oninput="filterHistoryTable()" placeholder="Search Bill or Model No..." class="w-full pl-9 pr-4 py-2 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-gray-400 text-xs"></i>
+                    </div>
+                </div>
+
+                <!-- Responsive Data Table -->
+                <div class="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-800">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 font-semibold uppercase">
+                            <tr>
+                                <th class="p-3">Bill No.</th>
+                                <th class="p-3">Model No.</th>
+                                <th class="p-3">Booking Date</th>
+                                <th class="p-3">Nag (Qty/AED)</th>
+                                <th class="p-3">Crystal (Qty/AED)</th>
+                                <th class="p-3">BN (Qty/AED)</th>
+                                <th class="p-3">Total Work Amount</th>
+                                <th class="p-3 text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyTableBody" class="divide-y divide-gray-200 dark:divide-gray-800 text-gray-700 dark:text-gray-300">
+                            <!-- Dynamic Rows Injected via JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Empty state fallback -->
+                <div id="emptyHistoryMsg" class="hidden text-center py-8 text-gray-400 dark:text-gray-500 text-sm">
+                    <i class="fa-solid fa-box-open text-3xl mb-2"></i>
+                    <p>No billing records found. Fill out the form above to save an entry.</p>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- ON-SCREEN QUICK CALCULATOR MODAL -->
+    <div id="calcModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-5 w-full max-w-xs shadow-2xl space-y-4 relative">
+            <div class="flex justify-between items-center pb-2 border-b border-gray-200 dark:border-gray-800">
+                <span class="text-sm font-bold flex items-center gap-2">
+                    <i class="fa-solid fa-calculator text-blue-500"></i> Quick Calculator
+                </span>
+                <button onclick="toggleCalcModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-lg">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Display -->
+            <div class="bg-gray-100 dark:bg-gray-950 p-4 rounded-2xl text-right">
+                <div id="calcExpression" class="text-xs text-gray-400 h-4 overflow-hidden mb-1"></div>
+                <div id="calcScreen" class="text-2xl font-mono font-bold text-gray-800 dark:text-gray-100 truncate">0</div>
+            </div>
+
+            <!-- Keypad -->
+            <div class="grid grid-cols-4 gap-2">
+                <button onclick="calcClear()" class="col-span-2 py-2.5 bg-red-500/10 text-red-500 hover:bg-red-500/20 font-bold rounded-xl text-sm transition-all">C</button>
+                <button onclick="calcBack()" class="py-2.5 bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 font-bold rounded-xl text-sm transition-all"><i class="fa-solid fa-backspace"></i></button>
+                <button onclick="calcInput('/')" class="py-2.5 bg-blue-500/10 text-blue-500 hover:bg-blue-500/20 font-bold rounded-xl text-sm transition-all">÷</button>
+
+                <button onclick="calcInput('7')" class="py-2.5 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 font-semibold rounded-xl text-sm transition-all">7</button>
+                <button onclick="calcInput('8')" class="py-2.5 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 font-semibold rounded-xl text-sm transition-all">8</button>
+                <button onclick="calcInput('9')" class="py-2.5 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 font-semibold rounded-xl text-sm transition-all">9</button>
+                <button onclick="calcInput('*')" class="py-2.5 bg-blue-500/10 text-blue-500 hover:bg-blue-500/20 font-bold rounded-xl text-sm transition-all">×</button>
+
+                <button onclick="calcInput('4')" class="py-2.5 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 font-semibold rounded-xl text-sm transition-all">4</button>
+                <button onclick="calcInput('5')" class="py-2.5 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 font-semibold rounded-xl text-sm transition-all">5</button>
+                <button onclick="calcInput('6')" class="py-2.5 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 font-semibold rounded-xl text-sm transition-all">6</button>
+                <button onclick="calcInput('-')" class="py-2.5 bg-blue-500/10 text-blue-500 hover:bg-blue-500/20 font-bold rounded-xl text-sm transition-all">-</button>
+
+                <button onclick="calcInput('1')" class="py-2.5 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 font-semibold rounded-xl text-sm transition-all">1</button>
+                <button onclick="calcInput('2')" class="py-2.5 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 font-semibold rounded-xl text-sm transition-all">2</button>
+                <button onclick="calcInput('3')" class="py-2.5 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 font-semibold rounded-xl text-sm transition-all">3</button>
+                <button onclick="calcInput('+')" class="py-2.5 bg-blue-500/10 text-blue-500 hover:bg-blue-500/20 font-bold rounded-xl text-sm transition-all">+</button>
+
+                <button onclick="calcInput('0')" class="col-span-2 py-2.5 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 font-semibold rounded-xl text-sm transition-all">0</button>
+                <button onclick="calcInput('.')" class="py-2.5 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 font-semibold rounded-xl text-sm transition-all">.</button>
+                <button onclick="calcEqual()" class="py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-sm shadow-md transition-all">=</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- APPLICATION LOGIC SCRIPT -->
+    <script>
+        // State Management
+        let currentUser = null;
+        let billHistory = [];
+        let registeredUsers = JSON.parse(localStorage.getItem('app_registered_users') || '{}');
+        
+        // Dynamic Calculator rates constants
+        const NAG_RATE_DIVISOR = 1440;
+        const NAG_RATE_PRICE = 17;
+        const CRYSTAL_RATE_DIVISOR = 200;
+        const CRYSTAL_RATE_PRICE = 10;
+        const BN_RATE_DIVISOR = 200;
+        const BN_RATE_PRICE = 10;
+
+        // Initialization
+        window.onload = function() {
+            // Set initial date to today
+            document.getElementById('bookingDate').valueAsDate = new Date();
+            
+            // Load persistent saved theme preference
+            const savedTheme = localStorage.getItem('app_theme');
+            if (savedTheme === 'light') {
+                document.documentElement.classList.remove('dark');
+                document.getElementById('themeIcon').className = 'fa-solid fa-sun text-lg';
+            }
+
+            // Load saved user session if exists
+            const savedUser = localStorage.getItem('app_active_user');
+            if (savedUser) {
+                currentUser = JSON.parse(savedUser);
+                setupLoggedInDashboard();
+            }
+
+            // Load saved history data
+            const savedHistory = localStorage.getItem('app_bill_history');
+            if (savedHistory) {
+                billHistory = JSON.parse(savedHistory);
+            }
+
+            calculateRealtimeWork();
+        };
+
+        // Dark Mode Toggle Logic
+        function toggleDarkMode() {
+            const isDark = document.documentElement.classList.toggle('dark');
+            const themeIcon = document.getElementById('themeIcon');
+            if (isDark) {
+                themeIcon.className = 'fa-solid fa-moon text-lg';
+                localStorage.setItem('app_theme', 'dark');
+            } else {
+                themeIcon.className = 'fa-solid fa-sun text-lg';
+                localStorage.setItem('app_theme', 'light');
+            }
+        }
+
+        // Tab Switching for Auth (Login vs Create Password)
+        function switchAuthTab(tab) {
+            const loginForm = document.getElementById('loginForm');
+            const registerForm = document.getElementById('registerForm');
+            const tabLoginBtn = document.getElementById('tabLoginBtn');
+            const tabRegisterBtn = document.getElementById('tabRegisterBtn');
+            const alertBox = document.getElementById('authAlert');
+
+            alertBox.classList.add('hidden');
+
+            if (tab === 'login') {
+                loginForm.classList.remove('hidden');
+                registerForm.classList.add('hidden');
+                tabLoginBtn.className = "flex-1 py-4 text-center font-medium text-sm border-b-2 border-blue-600 text-blue-600 dark:text-blue-400 transition-all";
+                tabRegisterBtn.className = "flex-1 py-4 text-center font-medium text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-all";
+            } else {
+                loginForm.classList.add('hidden');
+                registerForm.classList.remove('hidden');
+                tabRegisterBtn.className = "flex-1 py-4 text-center font-medium text-sm border-b-2 border-emerald-600 text-emerald-600 dark:text-emerald-400 transition-all";
+                tabLoginBtn.className = "flex-1 py-4 text-center font-medium text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-all";
+            }
+        }
+
+        // Show Auth Alert Message
+        function showAuthAlert(message, type = 'error') {
+            const alertBox = document.getElementById('authAlert');
+            alertBox.classList.remove('hidden');
+            if (type === 'error') {
+                alertBox.className = "mt-4 p-3 rounded-xl text-xs font-medium text-center bg-red-500/10 text-red-500 border border-red-500/20";
+            } else {
+                alertBox.className = "mt-4 p-3 rounded-xl text-xs font-medium text-center bg-emerald-500/10 text-emerald-500 border border-emerald-500/20";
+            }
+            alertBox.innerText = message;
+        }
+
+        // Handle Registration Form Submit
+        function handleRegisterSubmit(e) {
+            e.preventDefault();
+            const fullName = document.getElementById('regFullName').value.trim();
+            const username = document.getElementById('regUsername').value.trim().toLowerCase();
+            const password = document.getElementById('regPassword').value;
+            const confirmPassword = document.getElementById('regConfirmPassword').value;
+
+            if (password !== confirmPassword) {
+                showAuthAlert('Passwords do not match. Please verify.', 'error');
+                return;
+            }
+
+            if (registeredUsers[username]) {
+                showAuthAlert('Username already exists! Choose another or log in.', 'error');
+                return;
+            }
+
+            // Save user info
+            registeredUsers[username] = {
+                fullName: fullName,
+                password: password,
+                avatar: `https://placehold.co/100x100/0284c7/ffffff?text=${encodeURIComponent(fullName.charAt(0).toUpperCase())}`
+            };
+
+            localStorage.setItem('app_registered_users', JSON.stringify(registeredUsers));
+            showAuthAlert('Password created successfully! Logging in...', 'success');
+
+            setTimeout(() => {
+                currentUser = { username: username, fullName: fullName, avatar: registeredUsers[username].avatar };
+                localStorage.setItem('app_active_user', JSON.stringify(currentUser));
+                setupLoggedInDashboard();
+            }, 1000);
+        }
+
+        // Handle Login Form Submit
+        function handleLoginSubmit(e) {
+            e.preventDefault();
+            const username = document.getElementById('loginUsername').value.trim().toLowerCase();
+            const password = document.getElementById('loginPassword').value;
+
+            // Simple validation check against registered users or fallback demo account
+            if (registeredUsers[username]) {
+                if (registeredUsers[username].password === password) {
+                    currentUser = {
+                        username: username,
+                        fullName: registeredUsers[username].fullName,
+                        avatar: registeredUsers[username].avatar
+                    };
+                    localStorage.setItem('app_active_user', JSON.stringify(currentUser));
+                    setupLoggedInDashboard();
+                } else {
+                    showAuthAlert('Invalid password. Please try again.', 'error');
+                }
+            } else {
+                // Allow instant guest demo login if no registered users exist
+                currentUser = {
+                    username: username || 'Operator',
+                    fullName: username ? username.toUpperCase() : 'Work Operator',
+                    avatar: `https://placehold.co/100x100/0284c7/ffffff?text=${encodeURIComponent((username || 'W').charAt(0).toUpperCase())}`
+                };
+                localStorage.setItem('app_active_user', JSON.stringify(currentUser));
+                setupLoggedInDashboard();
+            }
+        }
+
+        // Setup UI for Logged-In User
+        function setupLoggedInDashboard() {
+            document.getElementById('authSection').classList.add('hidden');
+            document.getElementById('dashboardSection').classList.remove('hidden');
+            document.getElementById('userProfileArea').classList.remove('hidden');
+            document.getElementById('userNameDisplay').innerText = currentUser.fullName;
+            document.getElementById('userAvatar').src = currentUser.avatar;
+
+            renderHistoryTable();
+        }
+
+        // Logout User
+        function handleLogout() {
+            currentUser = null;
+            localStorage.removeItem('app_active_user');
+            document.getElementById('dashboardSection').classList.add('hidden');
+            document.getElementById('userProfileArea').classList.add('hidden');
+            document.getElementById('authSection').classList.remove('hidden');
+        }
+
+        // Profile Avatar Upload Handler
+        function triggerProfileUpload() {
+            document.getElementById('avatarInput').click();
+        }
+
+        function handleAvatarUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const avatarUrl = e.target.result;
+                    document.getElementById('userAvatar').src = avatarUrl;
+                    if (currentUser) {
+                        currentUser.avatar = avatarUrl;
+                        localStorage.setItem('app_active_user', JSON.stringify(currentUser));
+                        if (registeredUsers[currentUser.username]) {
+                            registeredUsers[currentUser.username].avatar = avatarUrl;
+                            localStorage.setItem('app_registered_users', JSON.stringify(registeredUsers));
+                        }
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // REAL-TIME WORK CALCULATION LOGIC
+        function calculateRealtimeWork() {
+            const nagQty = parseFloat(document.getElementById('nagQty').value) || 0;
+            const crystalQty = parseFloat(document.getElementById('crystalQty').value) || 0;
+            const bnQty = parseFloat(document.getElementById('bnQty').value) || 0;
+
+            // Formulations requested:
+            // Nag: 1440 = 17 AED -> Amount = (Qty / 1440) * 17
+            // Crystal: 200 = 10 AED -> Amount = (Qty / 200) * 10
+            // BN: 200 = 10 AED -> Amount = (Qty / 200) * 10
+
+            const nagAmt = (nagQty / NAG_RATE_DIVISOR) * NAG_RATE_PRICE;
+            const crystalAmt = (crystalQty / CRYSTAL_RATE_DIVISOR) * CRYSTAL_RATE_PRICE;
+            const bnAmt = (bnQty / BN_RATE_DIVISOR) * BN_RATE_PRICE;
+            const grandTotal = nagAmt + crystalAmt + bnAmt;
+
+            // Update Input Card Calculated Indicators
+            document.getElementById('nagCalculated').innerText = nagAmt.toFixed(2);
+            document.getElementById('crystalCalculated').innerText = crystalAmt.toFixed(2);
+            document.getElementById('bnCalculated').innerText = bnAmt.toFixed(2);
+
+            // Update Right Side Live Summary Panel
+            document.getElementById('summaryNagAmt').innerText = nagAmt.toFixed(2);
+            document.getElementById('summaryCrystalAmt').innerText = crystalAmt.toFixed(2);
+            document.getElementById('summaryBnAmt').innerText = bnAmt.toFixed(2);
+            document.getElementById('liveTotalAmount').innerText = grandTotal.toFixed(2);
+        }
+
+        // Save Bill Entry into History
+        function handleSaveBill(e) {
+            e.preventDefault();
+
+            const billNo = document.getElementById('billNo').value.trim();
+            const modelNo = document.getElementById('modelNo').value.trim();
+            const bookingDate = document.getElementById('bookingDate').value;
+            const nagQty = parseFloat(document.getElementById('nagQty').value) || 0;
+            const crystalQty = parseFloat(document.getElementById('crystalQty').value) || 0;
+            const bnQty = parseFloat(document.getElementById('bnQty').value) || 0;
+
+            const nagAmt = (nagQty / NAG_RATE_DIVISOR) * NAG_RATE_PRICE;
+            const crystalAmt = (crystalQty / CRYSTAL_RATE_DIVISOR) * CRYSTAL_RATE_PRICE;
+            const bnAmt = (bnQty / BN_RATE_DIVISOR) * BN_RATE_PRICE;
+            const totalAmt = nagAmt + crystalAmt + bnAmt;
+
+            const newRecord = {
+                id: Date.now(),
+                billNo,
+                modelNo,
+                bookingDate,
+                nagQty,
+                nagAmt: nagAmt.toFixed(2),
+                crystalQty,
+                crystalAmt: crystalAmt.toFixed(2),
+                bnQty,
+                bnAmt: bnAmt.toFixed(2),
+                totalAmt: totalAmt.toFixed(2)
+            };
+
+            billHistory.unshift(newRecord);
+            localStorage.setItem('app_bill_history', JSON.stringify(billHistory));
+
+            renderHistoryTable();
+            resetBillForm();
+        }
+
+        // Reset Bill Form Fields
+        function resetBillForm() {
+            document.getElementById('billForm').reset();
+            document.getElementById('bookingDate').valueAsDate = new Date();
+            calculateRealtimeWork();
+        }
+
+        // Render History Table
+        function renderHistoryTable(filteredList = null) {
+            const listToRender = filteredList || billHistory;
+            const tableBody = document.getElementById('historyTableBody');
+            const emptyMsg = document.getElementById('emptyHistoryMsg');
+
+            tableBody.innerHTML = '';
+
+            if (listToRender.length === 0) {
+                emptyMsg.classList.remove('hidden');
+                return;
+            } else {
+                emptyMsg.classList.add('hidden');
+            }
+
+            listToRender.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors";
+                tr.innerHTML = `
+                    <td class="p-3 font-semibold text-blue-600 dark:text-blue-400">${item.billNo}</td>
+                    <td class="p-3 font-medium">${item.modelNo}</td>
+                    <td class="p-3 text-gray-500">${item.bookingDate}</td>
+                    <td class="p-3">
+                        <span class="font-medium">${item.nagQty}</span> 
+                        <span class="text-[10px] text-amber-500 font-semibold">(${item.nagAmt} AED)</span>
+                    </td>
+                    <td class="p-3">
+                        <span class="font-medium">${item.crystalQty}</span> 
+                        <span class="text-[10px] text-cyan-500 font-semibold">(${item.crystalAmt} AED)</span>
+                    </td>
+                    <td class="p-3">
+                        <span class="font-medium">${item.bnQty}</span> 
+                        <span class="text-[10px] text-purple-500 font-semibold">(${item.bnAmt} AED)</span>
+                    </td>
+                    <td class="p-3 font-bold text-emerald-600 dark:text-emerald-400">
+                        ${item.totalAmt} AED
+                    </td>
+                    <td class="p-3 text-center">
+                        <button onclick="deleteHistoryRecord(${item.id})" class="p-1.5 rounded-lg text-red-500 hover:bg-red-500/10 transition-colors" title="Delete Record">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </td>
+                `;
+                tableBody.appendChild(tr);
+            });
+        }
+
+        // Delete Entry from History
+        function deleteHistoryRecord(id) {
+            billHistory = billHistory.filter(item => item.id !== id);
+            localStorage.setItem('app_bill_history', JSON.stringify(billHistory));
+            renderHistoryTable();
+        }
+
+        // Search Filter for History
+        function filterHistoryTable() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = billHistory.filter(item => 
+                item.billNo.toLowerCase().includes(query) || 
+                item.modelNo.toLowerCase().includes(query)
+            );
+            renderHistoryTable(filtered);
+        }
+
+        // QUICK CALCULATOR MODAL LOGIC
+        let calcValue = '';
+        let calcExpr = '';
+
+        function toggleCalcModal() {
+            const modal = document.getElementById('calcModal');
+            modal.classList.toggle('hidden');
+        }
+
+        function calcInput(char) {
+            calcValue += char;
+            document.getElementById('calcScreen').innerText = calcValue;
+        }
+
+        function calcClear() {
+            calcValue = '';
+            calcExpr = '';
+            document.getElementById('calcScreen').innerText = '0';
+            document.getElementById('calcExpression').innerText = '';
+        }
+
+        function calcBack() {
+            calcValue = calcValue.slice(0, -1);
+            document.getElementById('calcScreen').innerText = calcValue || '0';
+        }
+
+        function calcEqual() {
+            try {
+                if (!calcValue) return;
+                calcExpr = calcValue;
+                // Safe basic evaluation for numeric calculator operations
+                const result = Function(`'use strict'; return (${calcValue})`)();
+                document.getElementById('calcExpression').innerText = calcExpr + ' =';
+                document.getElementById('calcScreen').innerText = result;
+                calcValue = result.toString();
+            } catch (err) {
+                document.getElementById('calcScreen').innerText = 'Error';
+                calcValue = '';
+            }
+        }
+    </script>
+</body>
+</html>
+```
